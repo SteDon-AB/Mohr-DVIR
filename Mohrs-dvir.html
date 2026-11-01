@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mohr's Landscaping - Driver's Vehicle Inspection Report (DVIR)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #printable-sheet, #printable-sheet * { visibility: visible; }
+      #printable-sheet { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header / Navigation -->
+  <header class="bg-slate-900 text-white shadow-md no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-emerald-600 p-2 rounded-lg text-white">
+          <i class="fa-solid fa-truck-field text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Mohr's Landscaping</h1>
+          <p class="text-xs text-slate-400">Driver's Vehicle Inspection Report (DVIR)</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center bg-slate-800 rounded-lg p-1 space-x-1">
+        <button id="nav-form" onclick="switchTab('form')" class="px-3 py-1.5 rounded-md text-sm font-medium transition bg-emerald-600 text-white">
+          <i class="fa-solid fa-clipboard-check mr-1.5"></i> Inspection Form
+        </button>
+        <button id="nav-dashboard" onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-700">
+          <i class="fa-solid fa-chart-line mr-1.5"></i> Dashboard
+        </button>
+        <button id="nav-history" onclick="switchTab('history')" class="px-3 py-1.5 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-700">
+          <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> History Log
+        </button>
+      </nav>
+
+      <!-- User Profile & Admin Switcher -->
+      <div class="flex items-center space-x-3 border-l border-slate-700 pl-4">
+        <div class="text-right text-xs">
+          <div id="user-name-display" class="font-semibold text-slate-200">Steven Lynch</div>
+          <div id="user-role-display" class="text-emerald-400 font-mono text-[10px]">DRIVER</div>
+        </div>
+        
+        <button onclick="toggleUserModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 p-2 rounded-full border border-slate-700 transition" title="Switch User / Log In">
+          <i class="fa-solid fa-user-gear text-sm"></i>
+        </button>
+
+        <button id="admin-roster-btn" onclick="openAdminModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded text-xs font-bold transition flex items-center gap-1">
+          <i class="fa-solid fa-sliders"></i> Fleet & Roster
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+
+    <!-- DISPLAY 1: INSPECTION FORM -->
+    <section id="tab-form" class="space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">New Daily Inspection Report</h2>
+            <p class="text-sm text-slate-500">Alberta NSC Schedule 1 Compliance Checklist</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full font-medium border border-slate-200">
+              <i class="fa-regular fa-building mr-1"></i> Mohr's Landscaping (Sherwood Park, AB)
+            </span>
+          </div>
+        </div>
+
+        <form id="dvir-form" onsubmit="handleFormSubmit(event)" class="mt-6 space-y-6">
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Inspection Type</label>
+              <select id="insp-trip-type" required class="w-full text-sm p-2 border border-slate-300 rounded bg-white font-semibold text-slate-800">
+                <option value="Pre-trip">Pre-trip Inspection</option>
+                <option value="Post-trip">Post-trip Inspection</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Date & Time Window</label>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="date" id="insp-date" required class="w-full text-sm p-2 border border-slate-300 rounded">
+                <select id="insp-time-window" class="w-full text-sm p-2 border border-slate-300 rounded bg-white">
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Odometer Reading</label>
+              <input type="number" id="insp-odometer" placeholder="e.g. 283709" required class="w-full text-sm p-2 border border-slate-300 rounded">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Inspection Location</label>
+              <input type="text" id="insp-location" value="52244 Rng. Rd. 214 Sherwood Park" required class="w-full text-sm p-2 border border-slate-300 rounded">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tractor / Truck Unit</label>
+              <select id="insp-truck" required class="w-full text-sm p-2 border border-slate-300 rounded bg-white"></select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trailer (Optional)</label>
+              <select id="insp-trailer1" class="w-full text-sm p-2 border border-slate-300 rounded bg-white"></select>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+            <div>
+              <h3 class="font-bold text-slate-900">Inspection Items Checklist</h3>
+              <p class="text-xs text-slate-500">Select status. If Minor (D) or Major (R) is selected, choose specific defect details from the dropdown menu.</p>
+            </div>
+            <button type="button" onclick="markAllOK()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded font-semibold border border-slate-300">
+              <i class="fa-solid fa-check-double text-emerald-600 mr-1"></i> Mark All as No Defects Found
+            </button>
+          </div>
+
+          <!-- 23 NSC Checklist Grid -->
+          <div id="checklist-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+          <!-- Driver Signature Section -->
+          <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold uppercase text-slate-700">Driver Signature</h4>
+              <span id="sig-status-badge" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-semibold">Draw signature below</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-500 mb-1">Driver Name (Print)</label>
+                <input type="text" id="insp-driver-name" readonly class="w-full text-sm p-2 border border-slate-300 rounded bg-slate-100 font-semibold text-slate-700">
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-xs text-slate-500">Sign in Box Below</label>
+                  <button type="button" onclick="clearSignatureCanvas()" class="text-[10px] text-red-600 hover:underline">Clear / Re-sign</button>
+                </div>
+                <div class="border border-slate-300 rounded bg-white relative">
+                  <canvas id="signature-canvas" width="380" height="90" class="w-full h-24 cursor-crosshair rounded"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2">
+              <i class="fa-solid fa-paper-plane"></i> Submit DVIR Inspection Report
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- DISPLAY 2: DASHBOARD -->
+    <section id="tab-dashboard" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold uppercase text-slate-400">Total Inspections</div>
+            <div id="stat-total" class="text-2xl font-black text-slate-900 mt-1">0</div>
+          </div>
+          <div class="bg-blue-50 text-blue-600 p-3 rounded-lg"><i class="fa-solid fa-clipboard-list text-xl"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold uppercase text-slate-400">Clean / No Defects</div>
+            <div id="stat-clean" class="text-2xl font-black text-emerald-600 mt-1">0</div>
+          </div>
+          <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check text-xl"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold uppercase text-slate-400">Active Defects</div>
+            <div id="stat-defects" class="text-2xl font-black text-amber-600 mt-1">0</div>
+          </div>
+          <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold uppercase text-slate-400">Active Fleet Units</div>
+            <div id="stat-fleet" class="text-2xl font-black text-slate-900 mt-1">0</div>
+          </div>
+          <div class="bg-purple-50 text-purple-600 p-3 rounded-lg"><i class="fa-solid fa-truck text-xl"></i></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-bold text-slate-900 text-lg mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Active Defect Alerts & Maintenance Status
+          </h3>
+          <div id="dashboard-defects-list" class="space-y-3"></div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h3 class="font-bold text-slate-900 text-lg">Quick Actions</h3>
+          <button onclick="switchTab('form')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-lg transition text-sm">
+            <i class="fa-solid fa-plus mr-1"></i> Start New Inspection
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DISPLAY 3: HISTORY LOG -->
+    <section id="tab-history" class="space-y-6 hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Inspection History Log</h2>
+            <p class="text-sm text-slate-500">Historical Record of Submitted Driver Vehicle Inspection Reports</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="history-search" placeholder="Search vehicle or driver..." oninput="renderHistoryTable()" class="text-sm p-2 border border-slate-300 rounded">
+            <select id="history-filter" onchange="renderHistoryTable()" class="text-sm p-2 border border-slate-300 rounded bg-white">
+              <option value="ALL">All Reports</option>
+              <option value="NO_DEFECTS">Clean Reports Only</option>
+              <option value="DEFECTS">Defects Reported Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <th class="p-3">Date / Time</th>
+                <th class="p-3">Type</th>
+                <th class="p-3">Vehicle Unit</th>
+                <th class="p-3">Driver</th>
+                <th class="p-3">Odometer</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: PRINTABLE DVIR SHEET -->
+  <div id="sheet-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 no-print">
+        <h3 class="font-bold text-slate-900">Official DVIR Inspection Sheet</h3>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded">
+            <i class="fa-solid fa-print mr-1"></i> Print Sheet
+          </button>
+          <button onclick="closeSheetModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+      </div>
+      <div class="p-6 overflow-y-auto font-mono text-xs" id="printable-sheet"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: USER SWITCHER / LOGIN -->
+  <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b">
+        <h3 class="font-bold text-slate-900 text-lg">Sign In / Switch User</h3>
+        <button onclick="toggleUserModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <p class="text-xs text-slate-500">Select an account below to log in or switch permissions:</p>
+      <div class="space-y-2" id="user-selection-list"></div>
+      <div class="pt-2 border-t flex justify-between items-center">
+        <button onclick="addNewDriverPrompt()" class="text-xs text-emerald-600 hover:underline font-semibold">+ Register New Account</button>
+        <button onclick="toggleUserModal()" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: ADMIN ROSTER & FLEET MANAGER -->
+  <div id="admin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+        <h3 class="font-bold"><i class="fa-solid fa-sliders mr-2"></i>Admin: Manage Roster & Fleet</h3>
+        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-6">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Driver & User Roster</h4>
+            <button onclick="promptAddDriver()" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-user-plus"></i> Add User
+            </button>
+          </div>
+          <div class="border rounded-lg overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 border-b">
+                <tr><th class="p-2.5">Name</th><th class="p-2.5">Email / Google ID</th><th class="p-2.5">Role</th><th class="p-2.5 text-right">Actions</th></tr>
+              </thead>
+              <tbody id="admin-drivers-list" class="divide-y"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Vehicle & Trailer Fleet</h4>
+            <button onclick="promptAddVehicle()" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-truck"></i> Add Vehicle/Trailer
+            </button>
+          </div>
+          <div class="border rounded-lg overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 border-b">
+                <tr><th class="p-2.5">Type</th><th class="p-2.5">Plate / Unit No</th><th class="p-2.5">Description</th><th class="p-2.5 text-right">Actions</th></tr>
+              </thead>
+              <tbody id="admin-vehicles-list" class="divide-y"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const NSC_ITEMS = [
+      { code: "13", name: "General", defectOptions: ["Loose component / body panel", "Fluid leak (non-hazardous)", "General hardware loose/missing", "Custom Defect Note"] },
+      { code: "1", name: "Air Brake System", defectOptions: ["Audible air leak detected", "Air pressure build-up rate slow", "Pushrod stroke out of limit", "Low pressure warning light/audio failure", "Custom Defect Note"] },
+      { code: "2", name: "Cab", defectOptions: ["Door latches / hinges damaged", "Seatbelt component missing or broken", "Floorboard hole / damage", "Custom Defect Note"] },
+      { code: "21", name: "Tires", defectOptions: ["Flat tire / low pressure", "Tread depth below minimum limit", "Tire sidewall cut/damaged", "Custom Defect Note"] },
+      { code: "6", name: "Driver Controls", defectOptions: ["Accelerator pedal sticking", "Gauge / indicator failure", "Engine shutdown switch fault", "Custom Defect Note"] },
+      { code: "22", name: "Wheels, Hubs, Fasteners", defectOptions: ["Wheel fastener loose / missing", "Hub seal leaking oil", "Wheel rim cracked / damaged", "Custom Defect Note"] },
+      { code: "15", name: "Heater / Defroster", defectOptions: ["Defroster fails to blow air on windshield", "Heater core malfunction", "Custom Defect Note"] },
+      { code: "20", name: "Suspension System", defectOptions: ["Leaf spring broken / shifted", "Air bag leaking", "Shock absorber loose / damaged", "Custom Defect Note"] },
+      { code: "16", name: "Horn", defectOptions: ["Electric / air horn inoperative", "Custom Defect Note"] },
+      { code: "4", name: "Coupling Devices", defectOptions: ["Fifth wheel lock jaw loose", "Pintle hook pin missing", "Safety chains damaged / improper", "Custom Defect Note"] },
+      { code: "19", name: "Steering", defectOptions: ["Steering wheel free play excessive", "Power steering fluid low / leak", "Custom Defect Note"] },
+      { code: "18", name: "Lamps / Reflectors", defectOptions: ["Headlamp / low beam out", "Brake light inoperative", "Turn signal bulb burnt out", "Reflector damaged / missing", "Custom Defect Note"] },
+      { code: "7", name: "Driver Seat", defectOptions: ["Seat adjustment mechanism loose", "Seat frame broken", "Custom Defect Note"] },
+      { code: "5", name: "Dangerous Goods", defectOptions: ["Placard missing or damaged", "Documentation missing", "Custom Defect Note"] },
+      { code: "14", name: "Glass and Mirrors", defectOptions: ["Windshield crack obstructs view", "Side mirror damaged or loose", "Custom Defect Note"] },
+      { code: "10", name: "Exhaust Systems", defectOptions: ["Exhaust leak detected", "Muffler / pipe loose or missing", "Custom Defect Note"] },
+      { code: "23", name: "Windshield Wiper / Washer", defectOptions: ["Wiper blade torn or missing", "Washer fluid pump inoperative", "Custom Defect Note"] },
+      { code: "11", name: "Frame and Cargo Body", defectOptions: ["Frame member cracked / loose", "Tailgate / side door latch damaged", "Custom Defect Note"] },
+      { code: "9", name: "Emergency Equipment & Safety Devices", defectOptions: ["Fire extinguisher missing / uncharged", "Warning triangles missing", "Custom Defect Note"] },
+      { code: "3", name: "Cargo Securement", defectOptions: ["Tie-down strap damaged", "Cargo winch / ratchet worn out", "Custom Defect Note"] },
+      { code: "12", name: "Fuel Systems", defectOptions: ["Fuel cap missing", "Fuel tank leaking", "Custom Defect Note"] },
+      { code: "17", name: "Hydraulic Brakes", defectOptions: ["Brake pedal fade / spongy", "Hydraulic fluid leaking", "Custom Defect Note"] },
+      { code: "8", name: "Electric Brakes", defectOptions: ["Brake controller loose / disconnected", "Breakaway switch inoperative", "Custom Defect Note"] }
+    ];
+
+    let currentUser = { id: '1', name: 'Steven Lynch', role: 'DRIVER', email: 'driver@mohrslandscaping.ca', savedSignature: null };
+
+    let driversList = [
+      { id: '1', name: 'Steven Lynch', email: 'driver@mohrslandscaping.ca', role: 'DRIVER', savedSignature: null },
+      { id: '2', name: 'Mohr Administrator', email: 'admin@mohrslandscaping.ca', role: 'ADMIN', savedSignature: null }
+    ];
+
+    let vehiclesList = [
+      { id: 'v1', type: 'Truck', plate: 'CFW-6270', desc: 'Peterbilt' },
+      { id: 'v2', type: 'Truck', plate: 'CVT-9068', desc: 'Mack' },
+      { id: 'v3', type: 'Trailer', plate: 'TR-102', desc: 'Pipelayer Trailer' }
+    ];
+
+    let dvirHistory = [
+      {
+        id: 'DVIR-20261027-01',
+        date: '2026-10-27',
+        timeWindow: 'PM',
+        tripType: 'Post-trip',
+        odometer: '283709',
+        location: '52244 Rng. Rd. 214 Sherwood Park',
+        truck: 'CFW-6270 Peterbilt',
+        trailer1: 'None',
+        driver: 'Steven Lynch',
+        defects: [],
+        status: 'CLEAN',
+        signature: null
+      }
+    ];
+
+    let canvas, ctx, isDrawing = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('insp-date').value = new Date().toISOString().split('T')[0];
+      renderChecklistGrid();
+      populateDropdowns();
+      renderHistoryTable();
+      updateDashboardStats();
+      initSignatureCanvas();
+    });
+
+    function switchTab(tab) {
+      ['form', 'dashboard', 'history'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).className = "px-3 py-1.5 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-700";
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.getElementById(`nav-${tab}`).className = "px-3 py-1.5 rounded-md text-sm font-medium transition bg-emerald-600 text-white";
+    }
+
+    function initSignatureCanvas() {
+      canvas = document.getElementById('signature-canvas');
+      ctx = canvas.getContext('2d');
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      };
+
+      const startDrawing = (e) => {
+        isDrawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      };
+
+      const draw = (e) => {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      };
+
+      const stopDrawing = () => {
+        if (isDrawing) {
+          isDrawing = false;
+          const sigData = canvas.toDataURL();
+          currentUser.savedSignature = sigData;
+          const found = driversList.find(d => d.id === currentUser.id);
+          if (found) found.savedSignature = sigData;
+          
+          document.getElementById('sig-status-badge').innerText = 'Signature Saved';
+          document.getElementById('sig-status-badge').className = 'text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold';
+        }
+      };
+
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+      canvas.addEventListener('touchend', stopDrawing);
+
+      loadDriverSignature();
+    }
+
+    function clearSignatureCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      currentUser.savedSignature = null;
+      const found = driversList.find(d => d.id === currentUser.id);
+      if (found) found.savedSignature = null;
+      
+      document.getElementById('sig-status-badge').innerText = 'Draw signature below';
+      document.getElementById('sig-status-badge').className = 'text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-semibold';
+    }
+
+    function loadDriverSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (currentUser.savedSignature) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = currentUser.savedSignature;
+
+        document.getElementById('sig-status-badge').innerText = 'Signature Auto-Loaded';
+        document.getElementById('sig-status-badge').className = 'text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold';
+      } else {
+        document.getElementById('sig-status-badge').innerText = 'Draw signature below';
+        document.getElementById('sig-status-badge').className = 'text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-semibold';
+      }
+    }
+
+    function renderChecklistGrid() {
+      const grid = document.getElementById('checklist-grid');
+      grid.innerHTML = NSC_ITEMS.map(item => `
+        <div class="p-3 rounded-lg border border-slate-200 bg-slate-50 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold bg-slate-200 px-1.5 py-0.5 rounded text-slate-700">Code ${item.code}</span>
+            <span class="text-xs font-semibold text-slate-900">${item.name}</span>
+          </div>
+          <select name="status_${item.code}" onchange="handleDefectToggle('${item.code}', this.value)" class="w-full text-xs p-1.5 border border-slate-300 rounded font-bold bg-white">
+            <option value="OK" class="text-emerald-700 font-bold">OK - No Defects</option>
+            <option value="D" class="text-amber-700 font-bold">D - Minor Defect</option>
+            <option value="R" class="text-red-700 font-bold">R - Major Defect</option>
+          </select>
+          
+          <div id="defect_container_${item.code}" class="hidden space-y-1">
+            <select id="defect_select_${item.code}" class="w-full text-xs p-1.5 border border-amber-300 rounded bg-amber-50 text-amber-900 font-medium">
+              ${item.defectOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+            </select>
+            <input type="text" id="note_${item.code}" placeholder="Additional notes (optional)..." class="w-full text-xs p-1.5 border border-amber-300 rounded bg-white">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleDefectToggle(code, val) {
+      const container = document.getElementById(`defect_container_${code}`);
+      if (val === 'D' || val === 'R') {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    function markAllOK() {
+      NSC_ITEMS.forEach(item => {
+        const select = document.querySelector(`select[name="status_${item.code}"]`);
+        if (select) { select.value = 'OK'; handleDefectToggle(item.code, 'OK'); }
+      });
+    }
+
+    function populateDropdowns() {
+      const truckSelect = document.getElementById('insp-truck');
+      const trailerSelect = document.getElementById('insp-trailer1');
+      const trucks = vehiclesList.filter(v => v.type === 'Truck');
+      const trailers = vehiclesList.filter(v => v.type === 'Trailer');
+
+      truckSelect.innerHTML = trucks.map(t => `<option value="${t.plate} ${t.desc}">${t.plate} - ${t.desc}</option>`).join('');
+      trailerSelect.innerHTML = `<option value="None">None</option>` + trailers.map(tr => `<option value="${tr.plate} ${tr.desc}">${tr.plate} - ${tr.desc}</option>`).join('');
+      document.getElementById('insp-driver-name').value = currentUser.name;
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const defects = [];
+      NSC_ITEMS.forEach(item => {
+        const status = document.querySelector(`select[name="status_${item.code}"]`).value;
+        if (status !== 'OK') {
+          const selectedDefect = document.getElementById(`defect_select_${item.code}`).value;
+          const extraNotes = document.getElementById(`note_${item.code}`).value;
+          const finalNote = extraNotes ? `${selectedDefect} (${extraNotes})` : selectedDefect;
+          
+          defects.push({ code: item.code, name: item.name, severity: status, notes: finalNote });
+        }
+      });
+
+      const newReport = {
+        id: `DVIR-${Date.now()}`,
+        date: document.getElementById('insp-date').value,
+        timeWindow: document.getElementById('insp-time-window').value,
+        tripType: document.getElementById('insp-trip-type').value,
+        odometer: document.getElementById('insp-odometer').value,
+        location: document.getElementById('insp-location').value,
+        truck: document.getElementById('insp-truck').value,
+        trailer1: document.getElementById('insp-trailer1').value,
+        driver: currentUser.name,
+        signature: currentUser.savedSignature || canvas.toDataURL(),
+        defects: defects,
+        status: defects.length > 0 ? 'DEFECTS' : 'CLEAN'
+      };
+
+      dvirHistory.unshift(newReport);
+      renderHistoryTable();
+      updateDashboardStats();
+      alert('DVIR Inspection Report submitted successfully!');
+      switchTab('history');
+    }
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('history-table-body');
+      const filter = document.getElementById('history-filter').value;
+      const search = document.getElementById('history-search').value.toLowerCase();
+
+      let filtered = dvirHistory.filter(item => {
+        if (filter === 'NO_DEFECTS' && item.status !== 'CLEAN') return false;
+        if (filter === 'DEFECTS' && item.status !== 'DEFECTS') return false;
+        if (search && !item.truck.toLowerCase().includes(search) && !item.driver.toLowerCase().includes(search)) return false;
+        return true;
+      });
+
+      tbody.innerHTML = filtered.map(item => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-3 font-semibold">${item.date} (${item.timeWindow})</td>
+          <td class="p-3 font-medium">${item.tripType}</td>
+          <td class="p-3 font-mono font-bold">${item.truck}</td>
+          <td class="p-3">${item.driver}</td>
+          <td class="p-3 font-mono">${item.odometer} km</td>
+          <td class="p-3">${item.status === 'CLEAN' ? '<span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded font-bold">Clean</span>' : `<span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold">${item.defects.length} Defect(s)</span>`}</td>
+          <td class="p-3 text-right">
+            <button onclick="viewSheet('${item.id}')" class="text-xs bg-slate-800 text-white px-2.5 py-1 rounded hover:bg-slate-700">View Sheet</button>
+            ${currentUser.role === 'ADMIN' ? `<button onclick="deleteReport('${item.id}')" class="ml-1 text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500">Delete</button>` : ''}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateDashboardStats() {
+      document.getElementById('stat-total').innerText = dvirHistory.length;
+      document.getElementById('stat-clean').innerText = dvirHistory.filter(h => h.status === 'CLEAN').length;
+      document.getElementById('stat-defects').innerText = dvirHistory.filter(h => h.status === 'DEFECTS').length;
+      document.getElementById('stat-fleet').innerText = vehiclesList.length;
+
+      const defectsList = document.getElementById('dashboard-defects-list');
+      const defectReports = dvirHistory.filter(h => h.status === 'DEFECTS');
+      if (defectReports.length === 0) {
+        defectsList.innerHTML = `<div class="p-4 text-sm text-slate-500 bg-slate-50 rounded text-center">No active vehicle defects reported. Fleet is clear!</div>`;
+      } else {
+        defectsList.innerHTML = defectReports.map(r => `
+          <div class="p-3 border border-amber-200 bg-amber-50 rounded-lg space-y-1">
+            <div class="flex items-center justify-between text-xs font-bold text-amber-900">
+              <span>${r.truck} — Driver: ${r.driver}</span>
+              <span>${r.date}</span>
+            </div>
+            <div class="text-xs text-amber-800">${r.defects.map(d => `• Code ${d.code} - ${d.name} [${d.severity}]: ${d.notes}`).join('<br>')}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function viewSheet(id) {
+      const r = dvirHistory.find(h => h.id === id);
+      if (!r) return;
+      document.getElementById('printable-sheet').innerHTML = `
+        <div class="border border-slate-900 p-4 space-y-3 bg-white text-slate-900">
+          <div class="text-center font-bold text-sm border-b pb-2">DRIVER'S VEHICLE INSPECTION REPORT (DVIR)</div>
+          <div class="grid grid-cols-2 text-xs gap-2">
+            <div><strong>Company:</strong> Mohr's Landscaping</div>
+            <div><strong>Address:</strong> 106 Blueberry Cres, Sherwood Park</div>
+            <div><strong>Date:</strong> ${r.date} (${r.timeWindow})</div>
+            <div><strong>Type:</strong> ${r.tripType}</div>
+            <div><strong>Truck/Tractor:</strong> ${r.truck}</div>
+            <div><strong>Odometer:</strong> ${r.odometer} km</div>
+            <div><strong>Location:</strong> ${r.location}</div>
+            <div><strong>Driver:</strong> ${r.driver}</div>
+          </div>
+          <div class="border-t pt-2 text-xs">
+            <div class="font-bold mb-1">Inspection Status: ${r.status === 'CLEAN' ? 'NO DEFECTS FOUND' : r.defects.length + ' DEFECT(S) REPORTED'}</div>
+            ${r.defects.map(d => `<div>• Code ${d.code} - ${d.name} [Severity: ${d.severity}]: ${d.notes}</div>`).join('')}
+          </div>
+          <div class="border-t pt-2 text-xs flex justify-between items-center">
+            <div><strong>Driver Print Name:</strong> ${r.driver}</div>
+            <div>${r.signature ? `<img src="${r.signature}" class="h-10 border-b border-slate-400" alt="Driver Signature"/>` : '_______________________'}</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('sheet-modal').classList.remove('hidden');
+    }
+
+    function closeSheetModal() { document.getElementById('sheet-modal').classList.add('hidden'); }
+    
+    function toggleUserModal() {
+      const modal = document.getElementById('user-modal');
+      renderUserSelectionList();
+      modal.classList.toggle('hidden');
+    }
+
+    function renderUserSelectionList() {
+      const container = document.getElementById('user-selection-list');
+      container.innerHTML = driversList.map(u => `
+        <button onclick="loginAsUser('${u.id}')" class="w-full text-left p-3 rounded-lg border ${currentUser.email === u.email ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 hover:border-slate-400'} transition flex items-center justify-between">
+          <div>
+            <div class="font-bold text-slate-800">${u.name} ${currentUser.email === u.email ? '(Current)' : ''}</div>
+            <div class="text-xs text-slate-500">${u.email}</div>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded font-mono font-bold ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">${u.role}</span>
+        </button>
+      `).join('');
+    }
+
+    function loginAsUser(id) {
+      const user = driversList.find(u => u.id === id);
+      if (!user) return;
+      currentUser = user;
+      document.getElementById('user-name-display').innerText = user.name;
+      document.getElementById('user-role-display').innerText = user.role;
+      document.getElementById('admin-roster-btn').classList.toggle('hidden', user.role !== 'ADMIN');
+      document.getElementById('insp-driver-name').value = user.name;
+      toggleUserModal();
+      loadDriverSignature();
+      renderHistoryTable();
+      alert(`Logged in as ${user.name} (${user.role})`);
+    }
+
+    function addNewDriverPrompt() {
+      const name = prompt("Enter new user full name:");
+      if (!name) return;
+      const email = prompt("Enter Google email address:", "driver@mohrslandscaping.ca");
+      const roleInput = prompt("Enter role ('DRIVER' or 'ADMIN'):", "DRIVER");
+      const role = roleInput && roleInput.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'DRIVER';
+      
+      driversList.push({ id: String(Date.now()), name, email, role, savedSignature: null });
+      renderUserSelectionList();
+      renderAdminDrivers();
+    }
+
+    function openAdminModal() {
+      renderAdminDrivers();
+      renderAdminVehicles();
+      document.getElementById('admin-modal').classList.remove('hidden');
+    }
+    function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+
+    function renderAdminDrivers() {
+      const tbody = document.getElementById('admin-drivers-list');
+      tbody.innerHTML = driversList.map(d => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-2.5 font-semibold">${d.name}</td>
+          <td class="p-2.5 text-slate-500">${d.email}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${d.role==='ADMIN'?'bg-amber-100 text-amber-800':'bg-slate-100 text-slate-700'}">${d.role}</span></td>
+          <td class="p-2.5 text-right space-x-2">
+            <button onclick="editDriver('${d.id}')" class="text-emerald-600 font-semibold hover:underline">Edit</button>
+            <button onclick="removeDriver('${d.id}')" class="text-red-600 hover:underline">Remove</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAdminVehicles() {
+      const tbody = document.getElementById('admin-vehicles-list');
+      tbody.innerHTML = vehiclesList.map(v => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-2.5 font-semibold">${v.type}</td>
+          <td class="p-2.5 font-mono">${v.plate}</td>
+          <td class="p-2.5 text-slate-600">${v.desc}</td>
+          <td class="p-2.5 text-right space-x-2">
+            <button onclick="editVehicle('${v.id}')" class="text-emerald-600 font-semibold hover:underline">Edit</button>
+            <button onclick="removeVehicle('${v.id}')" class="text-red-600 hover:underline">Remove</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function promptAddDriver() { addNewDriverPrompt(); }
+
+    function editDriver(id) {
+      const d = driversList.find(x => x.id === id);
+      if (!d) return;
+      const newName = prompt("Edit Driver Full Name:", d.name);
+      if (!newName) return;
+      const newEmail = prompt("Edit Email / Google ID:", d.email);
+      const newRoleInput = prompt("Edit Role ('DRIVER' or 'ADMIN'):", d.role);
+      
+      d.name = newName;
+      if (newEmail) d.email = newEmail;
+      if (newRoleInput) d.role = newRoleInput.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'DRIVER';
+
+      if (currentUser.id === d.id) {
+        currentUser = d;
+        document.getElementById('user-name-display').innerText = d.name;
+        document.getElementById('user-role-display').innerText = d.role;
+        document.getElementById('admin-roster-btn').classList.toggle('hidden', d.role !== 'ADMIN');
+        document.getElementById('insp-driver-name').value = d.name;
+      }
+
+      renderAdminDrivers();
+      renderUserSelectionList();
+    }
+
+    function removeDriver(id) {
+      if (driversList.length <= 1) { alert("Cannot remove the last user account."); return; }
+      driversList = driversList.filter(d => d.id !== id);
+      renderAdminDrivers();
+      renderUserSelectionList();
+    }
+
+    function promptAddVehicle() {
+      const type = prompt("Enter Type ('Truck' or 'Trailer'):", "Truck");
+      if (!type) return;
+      const plate = prompt("Enter unit number / license plate:", "CFW-9999");
+      if (!plate) return;
+      const desc = prompt("Enter make/description (e.g., Peterbilt, Mack, Flatdeck):", "Kenworth");
+      vehiclesList.push({ id: String(Date.now()), type, plate, desc });
+      renderAdminVehicles();
+      populateDropdowns();
+      updateDashboardStats();
+    }
+
+    function editVehicle(id) {
+      const v = vehiclesList.find(x => x.id === id);
+      if (!v) return;
+
+      const newType = prompt("Edit Type ('Truck' or 'Trailer'):", v.type);
+      if (!newType) return;
+      const newPlate = prompt("Edit Unit Number / License Plate:", v.plate);
+      if (!newPlate) return;
+      const newDesc = prompt("Edit Description / Model:", v.desc);
+
+      v.type = newType;
+      v.plate = newPlate;
+      if (newDesc) v.desc = newDesc;
+
+      renderAdminVehicles();
+      populateDropdowns();
+      updateDashboardStats();
+    }
+
+    function removeVehicle(id) {
+      if (confirm("Are you sure you want to remove this vehicle or trailer from the fleet?")) {
+        vehiclesList = vehiclesList.filter(v => v.id !== id);
+        renderAdminVehicles();
+        populateDropdowns();
+        updateDashboardStats();
+      }
+    }
+
+    function deleteReport(id) {
+      if (confirm("Are you sure you want to delete this inspection record?")) {
+        dvirHistory = dvirHistory.filter(h => h.id !== id);
+        renderHistoryTable();
+        updateDashboardStats();
+      }
+    }
+  </script>
+</body>
+</html>
