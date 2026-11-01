@@ -17,246 +17,289 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
 
-  <!-- Header / Navigation -->
-  <header class="bg-slate-900 text-white shadow-md no-print">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center space-x-3">
-        <div class="bg-emerald-600 p-2 rounded-lg text-white">
-          <i class="fa-solid fa-truck-field text-xl"></i>
+  <!-- LOGIN SCREEN -->
+  <section id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6">
+      <div class="text-center space-y-2">
+        <div class="inline-flex bg-emerald-600 p-3 rounded-xl text-white mb-1">
+          <i class="fa-solid fa-truck-field text-3xl"></i>
         </div>
-        <div>
-          <h1 class="font-bold text-lg leading-tight">Mohr's Landscaping</h1>
-          <p class="text-xs text-slate-400">Driver's Vehicle Inspection Report (DVIR)</p>
-        </div>
+        <h2 class="text-2xl font-bold text-slate-900">Mohr's Landscaping</h2>
+        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold">DVIR Fleet Inspection Portal</p>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="flex items-center bg-slate-800 rounded-lg p-1 space-x-1">
-        <button id="nav-form" onclick="switchTab('form')" class="px-3 py-1.5 rounded-md text-sm font-medium transition bg-emerald-600 text-white">
-          <i class="fa-solid fa-clipboard-check mr-1.5"></i> Inspection Form
-        </button>
-        <button id="nav-dashboard" onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-700">
-          <i class="fa-solid fa-chart-line mr-1.5"></i> Dashboard
-        </button>
-        <button id="nav-history" onclick="switchTab('history')" class="px-3 py-1.5 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-700">
-          <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> History Log
-        </button>
-      </nav>
-
-      <!-- User Profile & Admin Switcher -->
-      <div class="flex items-center space-x-3 border-l border-slate-700 pl-4">
-        <div class="text-right text-xs">
-          <div id="user-name-display" class="font-semibold text-slate-200">Steven Lynch</div>
-          <div id="user-role-display" class="text-emerald-400 font-mono text-[10px]">DRIVER</div>
+      <!-- MANUAL LOGIN FORM -->
+      <form onsubmit="handleManualLogin(event)" class="space-y-4 pt-2 border-t border-slate-200">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Email / Driver ID</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-envelope text-sm"></i></span>
+            <input type="email" id="login-input-email" required placeholder="admin@mohrslandscaping.ca" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          </div>
         </div>
-        
-        <button onclick="toggleUserModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 p-2 rounded-full border border-slate-700 transition" title="Switch User / Log In">
-          <i class="fa-solid fa-user-gear text-sm"></i>
-        </button>
 
-        <button id="admin-roster-btn" onclick="openAdminModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded text-xs font-bold transition flex items-center gap-1">
-          <i class="fa-solid fa-sliders"></i> Fleet & Roster
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Password / PIN</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-lock text-sm"></i></span>
+            <input type="password" id="login-input-password" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-right-to-bracket"></i> Log In to Portal
         </button>
+      </form>
+
+      <!-- QUICK SELECT ACCOUNTS SECTION -->
+      <div class="border-t border-slate-200 pt-4 space-y-2">
+        <div class="text-[11px] font-bold uppercase text-slate-500 text-center">Quick Select Account</div>
+        <div id="login-user-list" class="space-y-2 min-h-[80px] max-h-48 overflow-y-auto pr-1"></div>
+      </div>
+
+      <div class="border-t border-slate-200 pt-3 flex items-center justify-between">
+        <button type="button" onclick="addNewDriverPrompt()" class="text-xs text-emerald-600 hover:underline font-bold">
+          <i class="fa-solid fa-user-plus mr-1"></i> Register New User
+        </button>
+        <span class="text-[10px] text-slate-400">v2.9 Secure Auth</span>
       </div>
     </div>
-  </header>
+  </section>
 
-  <!-- Main Workspace -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+  <!-- APP CONTAINER (Hidden until authenticated) -->
+  <div id="app-container" class="hidden min-h-screen flex flex-col">
 
-    <!-- DISPLAY 1: INSPECTION FORM -->
-    <section id="tab-form" class="space-y-6">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        
-        <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">New Daily Inspection Report</h2>
-            <p class="text-sm text-slate-500">Alberta NSC Schedule 1 Compliance Checklist</p>
+    <!-- Header / Navigation -->
+    <header class="bg-slate-900 text-white shadow-md no-print">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-3">
+          <div class="bg-emerald-600 p-2 rounded-lg text-white">
+            <i class="fa-solid fa-truck-field text-xl"></i>
           </div>
-          <div class="flex items-center gap-3">
+          <div>
+            <h1 class="font-bold text-lg leading-tight">Mohr's Landscaping</h1>
+            <p class="text-xs text-slate-400">Driver's Vehicle Inspection Report (DVIR)</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="flex items-center bg-slate-800 rounded-lg p-1 space-x-1">
+          <button id="nav-form" onclick="switchTab('form')" class="px-3 py-1.5 rounded-md text-sm font-medium transition bg-emerald-600 text-white">
+            <i class="fa-solid fa-clipboard-check mr-1.5"></i> Inspection Form
+          </button>
+          <button id="nav-dashboard" onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-700">
+            <i class="fa-solid fa-chart-line mr-1.5"></i> Dashboard
+          </button>
+          <button id="nav-history" onclick="switchTab('history')" class="px-3 py-1.5 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-700">
+            <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> History Log
+          </button>
+        </nav>
+
+        <!-- User Profile & Log Out -->
+        <div class="flex items-center space-x-3 border-l border-slate-700 pl-4">
+          <div class="text-right text-xs">
+            <div id="user-name-display" class="font-semibold text-slate-200">Steven Lynch</div>
+            <div id="user-role-display" class="text-emerald-400 font-mono text-[10px]">DRIVER</div>
+          </div>
+          
+          <button id="admin-roster-btn" onclick="openAdminModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded text-xs font-bold transition flex items-center gap-1">
+            <i class="fa-solid fa-sliders"></i> Fleet & Roster
+          </button>
+
+          <button onclick="logoutUser()" class="bg-slate-800 hover:bg-red-600/20 text-slate-300 hover:text-red-400 p-2 rounded-lg border border-slate-700 transition" title="Log Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+
+      <!-- DISPLAY 1: INSPECTION FORM -->
+      <section id="tab-form" class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">New Daily Inspection Report</h2>
+              <p class="text-sm text-slate-500">Alberta NSC Schedule 1 Compliance Checklist</p>
+            </div>
             <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full font-medium border border-slate-200">
               <i class="fa-regular fa-building mr-1"></i> Mohr's Landscaping (Sherwood Park, AB)
             </span>
           </div>
-        </div>
 
-        <form id="dvir-form" onsubmit="handleFormSubmit(event)" class="mt-6 space-y-6">
-          
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Inspection Type</label>
-              <select id="insp-trip-type" required class="w-full text-sm p-2 border border-slate-300 rounded bg-white font-semibold text-slate-800">
-                <option value="Pre-trip">Pre-trip Inspection</option>
-                <option value="Post-trip">Post-trip Inspection</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Date & Time Window</label>
-              <div class="grid grid-cols-2 gap-2">
-                <input type="date" id="insp-date" required class="w-full text-sm p-2 border border-slate-300 rounded">
-                <select id="insp-time-window" class="w-full text-sm p-2 border border-slate-300 rounded bg-white">
-                  <option value="AM">AM</option>
-                  <option value="PM">PM</option>
+          <form id="dvir-form" onsubmit="handleFormSubmit(event)" class="mt-6 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Inspection Type</label>
+                <select id="insp-trip-type" required class="w-full text-sm p-2 border border-slate-300 rounded bg-white font-semibold text-slate-800">
+                  <option value="Pre-trip">Pre-trip Inspection</option>
+                  <option value="Post-trip">Post-trip Inspection</option>
                 </select>
               </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Odometer Reading</label>
-              <input type="number" id="insp-odometer" placeholder="e.g. 283709" required class="w-full text-sm p-2 border border-slate-300 rounded">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Inspection Location</label>
-              <input type="text" id="insp-location" value="52244 Rng. Rd. 214 Sherwood Park" required class="w-full text-sm p-2 border border-slate-300 rounded">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tractor / Truck Unit</label>
-              <select id="insp-truck" required class="w-full text-sm p-2 border border-slate-300 rounded bg-white"></select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trailer (Optional)</label>
-              <select id="insp-trailer1" class="w-full text-sm p-2 border border-slate-300 rounded bg-white"></select>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between pt-4 border-t border-slate-200">
-            <div>
-              <h3 class="font-bold text-slate-900">Inspection Items Checklist</h3>
-              <p class="text-xs text-slate-500">Select status. If Minor (D) or Major (R) is selected, choose specific defect details from the dropdown menu.</p>
-            </div>
-            <button type="button" onclick="markAllOK()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded font-semibold border border-slate-300">
-              <i class="fa-solid fa-check-double text-emerald-600 mr-1"></i> Mark All as No Defects Found
-            </button>
-          </div>
-
-          <!-- 23 NSC Checklist Grid -->
-          <div id="checklist-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-
-          <!-- Driver Signature Section -->
-          <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-bold uppercase text-slate-700">Driver Signature</h4>
-              <span id="sig-status-badge" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-semibold">Draw signature below</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-slate-500 mb-1">Driver Name (Print)</label>
-                <input type="text" id="insp-driver-name" readonly class="w-full text-sm p-2 border border-slate-300 rounded bg-slate-100 font-semibold text-slate-700">
-              </div>
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <label class="block text-xs text-slate-500">Sign in Box Below</label>
-                  <button type="button" onclick="clearSignatureCanvas()" class="text-[10px] text-red-600 hover:underline">Clear / Re-sign</button>
-                </div>
-                <div class="border border-slate-300 rounded bg-white relative">
-                  <canvas id="signature-canvas" width="380" height="90" class="w-full h-24 cursor-crosshair rounded"></canvas>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Date & Time Window</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="date" id="insp-date" required class="w-full text-sm p-2 border border-slate-300 rounded">
+                  <select id="insp-time-window" class="w-full text-sm p-2 border border-slate-300 rounded bg-white">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
                 </div>
               </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Odometer Reading</label>
+                <input type="number" id="insp-odometer" placeholder="e.g. 283709" required class="w-full text-sm p-2 border border-slate-300 rounded">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Inspection Location</label>
+                <input type="text" id="insp-location" value="52244 Rng. Rd. 214 Sherwood Park" required class="w-full text-sm p-2 border border-slate-300 rounded">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tractor / Truck Unit</label>
+                <select id="insp-truck" required class="w-full text-sm p-2 border border-slate-300 rounded bg-white"></select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trailer (Optional)</label>
+                <select id="insp-trailer1" class="w-full text-sm p-2 border border-slate-300 rounded bg-white"></select>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+              <div>
+                <h3 class="font-bold text-slate-900">Inspection Items Checklist</h3>
+                <p class="text-xs text-slate-500">Select status. If Minor (D) or Major (R) is selected, choose specific defect details from the dropdown menu.</p>
+              </div>
+              <button type="button" onclick="markAllOK()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded font-semibold border border-slate-300">
+                <i class="fa-solid fa-check-double text-emerald-600 mr-1"></i> Mark All as No Defects Found
+              </button>
+            </div>
+
+            <div id="checklist-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold uppercase text-slate-700">Driver Signature</h4>
+                <span id="sig-status-badge" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-semibold">Draw signature below</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-500 mb-1">Driver Name (Print)</label>
+                  <input type="text" id="insp-driver-name" readonly class="w-full text-sm p-2 border border-slate-300 rounded bg-slate-100 font-semibold text-slate-700">
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="block text-xs text-slate-500">Sign in Box Below</label>
+                    <button type="button" onclick="clearSignatureCanvas()" class="text-[10px] text-red-600 hover:underline">Clear / Re-sign</button>
+                  </div>
+                  <div class="border border-slate-300 rounded bg-white relative">
+                    <canvas id="signature-canvas" width="380" height="90" class="w-full h-24 cursor-crosshair rounded"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> Submit DVIR Inspection Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- DISPLAY 2: DASHBOARD -->
+      <section id="tab-dashboard" class="space-y-6 hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold uppercase text-slate-400">Total Inspections</div>
+              <div id="stat-total" class="text-2xl font-black text-slate-900 mt-1">0</div>
+            </div>
+            <div class="bg-blue-50 text-blue-600 p-3 rounded-lg"><i class="fa-solid fa-clipboard-list text-xl"></i></div>
+          </div>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold uppercase text-slate-400">Clean / No Defects</div>
+              <div id="stat-clean" class="text-2xl font-black text-emerald-600 mt-1">0</div>
+            </div>
+            <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check text-xl"></i></div>
+          </div>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold uppercase text-slate-400">Active Defects</div>
+              <div id="stat-defects" class="text-2xl font-black text-amber-600 mt-1">0</div>
+            </div>
+            <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+          </div>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold uppercase text-slate-400">Active Fleet Units</div>
+              <div id="stat-fleet" class="text-2xl font-black text-slate-900 mt-1">0</div>
+            </div>
+            <div class="bg-purple-50 text-purple-600 p-3 rounded-lg"><i class="fa-solid fa-truck text-xl"></i></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-slate-900 text-lg mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Active Defect Alerts & Maintenance Status
+            </h3>
+            <div id="dashboard-defects-list" class="space-y-3"></div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+            <h3 class="font-bold text-slate-900 text-lg">Quick Actions</h3>
+            <button onclick="switchTab('form')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-lg transition text-sm">
+              <i class="fa-solid fa-plus mr-1"></i> Start New Inspection
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- DISPLAY 3: HISTORY LOG -->
+      <section id="tab-history" class="space-y-6 hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Inspection History Log</h2>
+              <p class="text-sm text-slate-500">Historical Record of Submitted Driver Vehicle Inspection Reports</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="history-search" placeholder="Search vehicle or driver..." oninput="renderHistoryTable()" class="text-sm p-2 border border-slate-300 rounded">
+              <select id="history-filter" onchange="renderHistoryTable()" class="text-sm p-2 border border-slate-300 rounded bg-white">
+                <option value="ALL">All Reports</option>
+                <option value="NO_DEFECTS">Clean Reports Only</option>
+                <option value="DEFECTS">Defects Reported Only</option>
+              </select>
             </div>
           </div>
 
-          <div class="flex justify-end pt-2">
-            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2">
-              <i class="fa-solid fa-paper-plane"></i> Submit DVIR Inspection Report
-            </button>
+          <div class="overflow-x-auto mt-4">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                  <th class="p-3">Date / Time</th>
+                  <th class="p-3">Type</th>
+                  <th class="p-3">Vehicle Unit</th>
+                  <th class="p-3">Driver</th>
+                  <th class="p-3">Odometer</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body" class="divide-y divide-slate-200"></tbody>
+            </table>
           </div>
-        </form>
-      </div>
-    </section>
+        </div>
+      </section>
 
-    <!-- DISPLAY 2: DASHBOARD -->
-    <section id="tab-dashboard" class="space-y-6 hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div class="text-xs font-bold uppercase text-slate-400">Total Inspections</div>
-            <div id="stat-total" class="text-2xl font-black text-slate-900 mt-1">0</div>
-          </div>
-          <div class="bg-blue-50 text-blue-600 p-3 rounded-lg"><i class="fa-solid fa-clipboard-list text-xl"></i></div>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div class="text-xs font-bold uppercase text-slate-400">Clean / No Defects</div>
-            <div id="stat-clean" class="text-2xl font-black text-emerald-600 mt-1">0</div>
-          </div>
-          <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check text-xl"></i></div>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div class="text-xs font-bold uppercase text-slate-400">Active Defects</div>
-            <div id="stat-defects" class="text-2xl font-black text-amber-600 mt-1">0</div>
-          </div>
-          <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div class="text-xs font-bold uppercase text-slate-400">Active Fleet Units</div>
-            <div id="stat-fleet" class="text-2xl font-black text-slate-900 mt-1">0</div>
-          </div>
-          <div class="bg-purple-50 text-purple-600 p-3 rounded-lg"><i class="fa-solid fa-truck text-xl"></i></div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h3 class="font-bold text-slate-900 text-lg mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Active Defect Alerts & Maintenance Status
-          </h3>
-          <div id="dashboard-defects-list" class="space-y-3"></div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
-          <h3 class="font-bold text-slate-900 text-lg">Quick Actions</h3>
-          <button onclick="switchTab('form')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-lg transition text-sm">
-            <i class="fa-solid fa-plus mr-1"></i> Start New Inspection
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- DISPLAY 3: HISTORY LOG -->
-    <section id="tab-history" class="space-y-6 hidden">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Inspection History Log</h2>
-            <p class="text-sm text-slate-500">Historical Record of Submitted Driver Vehicle Inspection Reports</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="text" id="history-search" placeholder="Search vehicle or driver..." oninput="renderHistoryTable()" class="text-sm p-2 border border-slate-300 rounded">
-            <select id="history-filter" onchange="renderHistoryTable()" class="text-sm p-2 border border-slate-300 rounded bg-white">
-              <option value="ALL">All Reports</option>
-              <option value="NO_DEFECTS">Clean Reports Only</option>
-              <option value="DEFECTS">Defects Reported Only</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto mt-4">
-          <table class="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                <th class="p-3">Date / Time</th>
-                <th class="p-3">Type</th>
-                <th class="p-3">Vehicle Unit</th>
-                <th class="p-3">Driver</th>
-                <th class="p-3">Odometer</th>
-                <th class="p-3">Status</th>
-                <th class="p-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="history-table-body" class="divide-y divide-slate-200"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </main>
+    </main>
+  </div>
 
   <!-- MODAL 1: PRINTABLE DVIR SHEET -->
   <div id="sheet-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -274,23 +317,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: USER SWITCHER / LOGIN -->
-  <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
-      <div class="flex items-center justify-between pb-2 border-b">
-        <h3 class="font-bold text-slate-900 text-lg">Sign In / Switch User</h3>
-        <button onclick="toggleUserModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <p class="text-xs text-slate-500">Select an account below to log in or switch permissions:</p>
-      <div class="space-y-2" id="user-selection-list"></div>
-      <div class="pt-2 border-t flex justify-between items-center">
-        <button onclick="addNewDriverPrompt()" class="text-xs text-emerald-600 hover:underline font-semibold">+ Register New Account</button>
-        <button onclick="toggleUserModal()" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 3: ADMIN ROSTER & FLEET MANAGER -->
+  <!-- MODAL 2: ADMIN ROSTER & FLEET MANAGER -->
   <div id="admin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
@@ -362,11 +389,11 @@
       { code: "8", name: "Electric Brakes", defectOptions: ["Brake controller loose / disconnected", "Breakaway switch inoperative", "Custom Defect Note"] }
     ];
 
-    let currentUser = { id: '1', name: 'Steven Lynch', role: 'DRIVER', email: 'driver@mohrslandscaping.ca', savedSignature: null };
+    let currentUser = null;
 
     let driversList = [
-      { id: '1', name: 'Steven Lynch', email: 'driver@mohrslandscaping.ca', role: 'DRIVER', savedSignature: null },
-      { id: '2', name: 'Mohr Administrator', email: 'admin@mohrslandscaping.ca', role: 'ADMIN', savedSignature: null }
+      { id: '1', name: 'Steven Lynch', email: 'driver@mohrslandscaping.ca', password: 'password123', role: 'DRIVER', savedSignature: null },
+      { id: '2', name: 'Mohr Administrator', email: 'admin@mohrslandscaping.ca', password: 'admin123', role: 'ADMIN', savedSignature: null }
     ];
 
     let vehiclesList = [
@@ -394,14 +421,105 @@
 
     let canvas, ctx, isDrawing = false;
 
+    function renderLoginUserList() {
+      const container = document.getElementById('login-user-list');
+      if (!container) return;
+      container.innerHTML = driversList.map(u => `
+        <button type="button" onclick="promptPasswordForUser('${u.id}')" class="w-full text-left p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition flex items-center justify-between">
+          <div>
+            <div class="font-bold text-xs text-slate-800">${u.name}</div>
+            <div class="text-[10px] text-slate-500">${u.email}</div>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded font-mono font-bold ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">${u.role}</span>
+        </button>
+      `).join('');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('insp-date').value = new Date().toISOString().split('T')[0];
+      renderLoginUserList();
       renderChecklistGrid();
       populateDropdowns();
       renderHistoryTable();
       updateDashboardStats();
-      initSignatureCanvas();
     });
+
+    function promptPasswordForUser(id) {
+      const user = driversList.find(u => u.id === id);
+      if (!user) return;
+      
+      const pwd = prompt(`Enter password for ${user.name}:`);
+      if (pwd === null) return;
+      
+      if (user.password && pwd !== user.password) {
+        alert("Incorrect password. Access denied.");
+        return;
+      }
+      
+      loginAsUser(user.id);
+    }
+
+    function handleManualLogin(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('login-input-email').value.trim();
+      const passwordInput = document.getElementById('login-input-password').value.trim();
+      
+      let user = driversList.find(u => u.email.toLowerCase() === emailInput.toLowerCase());
+      
+      if (emailInput.toLowerCase() === 'admin@mohrslandscaping.ca') {
+        if (passwordInput !== 'admin123') {
+          alert("Incorrect admin password.");
+          return;
+        }
+        if (!user) {
+          user = { id: '2', name: 'Mohr Administrator', email: 'admin@mohrslandscaping.ca', password: 'admin123', role: 'ADMIN', savedSignature: null };
+          driversList.push(user);
+        }
+      } else if (!user) {
+        user = {
+          id: String(Date.now()),
+          name: emailInput.split('@')[0],
+          email: emailInput,
+          password: passwordInput,
+          role: emailInput.includes('admin') ? 'ADMIN' : 'DRIVER',
+          savedSignature: null
+        };
+        driversList.push(user);
+      } else {
+        if (user.password && user.password !== passwordInput) {
+          alert("Incorrect password for this account.");
+          return;
+        }
+      }
+      
+      loginAsUser(user.id);
+    }
+
+    function loginAsUser(id) {
+      const user = driversList.find(u => u.id === id);
+      if (!user) return;
+      
+      currentUser = user;
+      document.getElementById('user-name-display').innerText = user.name;
+      document.getElementById('user-role-display').innerText = user.role;
+      document.getElementById('admin-roster-btn').classList.toggle('hidden', user.role !== 'ADMIN');
+      document.getElementById('insp-driver-name').value = user.name;
+      
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-container').classList.remove('hidden');
+
+      initSignatureCanvas();
+      renderHistoryTable();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      document.getElementById('login-input-email').value = '';
+      document.getElementById('login-input-password').value = '';
+      document.getElementById('app-container').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      renderLoginUserList();
+    }
 
     function switchTab(tab) {
       ['form', 'dashboard', 'history'].forEach(t => {
@@ -414,6 +532,7 @@
 
     function initSignatureCanvas() {
       canvas = document.getElementById('signature-canvas');
+      if (!canvas) return;
       ctx = canvas.getContext('2d');
       ctx.strokeStyle = '#0f172a';
       ctx.lineWidth = 2;
@@ -467,17 +586,19 @@
 
     function clearSignatureCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      currentUser.savedSignature = null;
-      const found = driversList.find(d => d.id === currentUser.id);
-      if (found) found.savedSignature = null;
-      
+      if (currentUser) {
+        currentUser.savedSignature = null;
+        const found = driversList.find(d => d.id === currentUser.id);
+        if (found) found.savedSignature = null;
+      }
       document.getElementById('sig-status-badge').innerText = 'Draw signature below';
       document.getElementById('sig-status-badge').className = 'text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-semibold';
     }
 
     function loadDriverSignature() {
+      if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (currentUser.savedSignature) {
+      if (currentUser && currentUser.savedSignature) {
         const img = new Image();
         img.onload = () => ctx.drawImage(img, 0, 0);
         img.src = currentUser.savedSignature;
@@ -538,7 +659,6 @@
 
       truckSelect.innerHTML = trucks.map(t => `<option value="${t.plate} ${t.desc}">${t.plate} - ${t.desc}</option>`).join('');
       trailerSelect.innerHTML = `<option value="None">None</option>` + trailers.map(tr => `<option value="${tr.plate} ${tr.desc}">${tr.plate} - ${tr.desc}</option>`).join('');
-      document.getElementById('insp-driver-name').value = currentUser.name;
     }
 
     function handleFormSubmit(e) {
@@ -579,6 +699,7 @@
 
     function renderHistoryTable() {
       const tbody = document.getElementById('history-table-body');
+      if (!tbody) return;
       const filter = document.getElementById('history-filter').value;
       const search = document.getElementById('history-search').value.toLowerCase();
 
@@ -599,7 +720,7 @@
           <td class="p-3">${item.status === 'CLEAN' ? '<span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded font-bold">Clean</span>' : `<span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold">${item.defects.length} Defect(s)</span>`}</td>
           <td class="p-3 text-right">
             <button onclick="viewSheet('${item.id}')" class="text-xs bg-slate-800 text-white px-2.5 py-1 rounded hover:bg-slate-700">View Sheet</button>
-            ${currentUser.role === 'ADMIN' ? `<button onclick="deleteReport('${item.id}')" class="ml-1 text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500">Delete</button>` : ''}
+            ${currentUser && currentUser.role === 'ADMIN' ? `<button onclick="deleteReport('${item.id}')" class="ml-1 text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500">Delete</button>` : ''}
           </td>
         </tr>
       `).join('');
@@ -658,50 +779,19 @@
     }
 
     function closeSheetModal() { document.getElementById('sheet-modal').classList.add('hidden'); }
-    
-    function toggleUserModal() {
-      const modal = document.getElementById('user-modal');
-      renderUserSelectionList();
-      modal.classList.toggle('hidden');
-    }
-
-    function renderUserSelectionList() {
-      const container = document.getElementById('user-selection-list');
-      container.innerHTML = driversList.map(u => `
-        <button onclick="loginAsUser('${u.id}')" class="w-full text-left p-3 rounded-lg border ${currentUser.email === u.email ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 hover:border-slate-400'} transition flex items-center justify-between">
-          <div>
-            <div class="font-bold text-slate-800">${u.name} ${currentUser.email === u.email ? '(Current)' : ''}</div>
-            <div class="text-xs text-slate-500">${u.email}</div>
-          </div>
-          <span class="text-xs px-2 py-0.5 rounded font-mono font-bold ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">${u.role}</span>
-        </button>
-      `).join('');
-    }
-
-    function loginAsUser(id) {
-      const user = driversList.find(u => u.id === id);
-      if (!user) return;
-      currentUser = user;
-      document.getElementById('user-name-display').innerText = user.name;
-      document.getElementById('user-role-display').innerText = user.role;
-      document.getElementById('admin-roster-btn').classList.toggle('hidden', user.role !== 'ADMIN');
-      document.getElementById('insp-driver-name').value = user.name;
-      toggleUserModal();
-      loadDriverSignature();
-      renderHistoryTable();
-      alert(`Logged in as ${user.name} (${user.role})`);
-    }
 
     function addNewDriverPrompt() {
       const name = prompt("Enter new user full name:");
       if (!name) return;
       const email = prompt("Enter Google email address:", "driver@mohrslandscaping.ca");
+      const password = prompt("Set user password / PIN:", "password123");
       const roleInput = prompt("Enter role ('DRIVER' or 'ADMIN'):", "DRIVER");
       const role = roleInput && roleInput.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'DRIVER';
       
-      driversList.push({ id: String(Date.now()), name, email, role, savedSignature: null });
-      renderUserSelectionList();
-      renderAdminDrivers();
+      const newUser = { id: String(Date.now()), name, email, password, role, savedSignature: null };
+      driversList.push(newUser);
+      renderLoginUserList();
+      if (!document.getElementById('admin-modal').classList.contains('hidden')) renderAdminDrivers();
     }
 
     function openAdminModal() {
@@ -719,8 +809,8 @@
           <td class="p-2.5 text-slate-500">${d.email}</td>
           <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${d.role==='ADMIN'?'bg-amber-100 text-amber-800':'bg-slate-100 text-slate-700'}">${d.role}</span></td>
           <td class="p-2.5 text-right space-x-2">
-            <button onclick="editDriver('${d.id}')" class="text-emerald-600 font-semibold hover:underline">Edit</button>
-            <button onclick="removeDriver('${d.id}')" class="text-red-600 hover:underline">Remove</button>
+            <button type="button" onclick="editDriver('${d.id}')" class="text-emerald-600 font-semibold hover:underline">Edit</button>
+            <button type="button" onclick="removeDriver('${d.id}')" class="text-red-600 hover:underline">Remove</button>
           </td>
         </tr>
       `).join('');
@@ -734,8 +824,8 @@
           <td class="p-2.5 font-mono">${v.plate}</td>
           <td class="p-2.5 text-slate-600">${v.desc}</td>
           <td class="p-2.5 text-right space-x-2">
-            <button onclick="editVehicle('${v.id}')" class="text-emerald-600 font-semibold hover:underline">Edit</button>
-            <button onclick="removeVehicle('${v.id}')" class="text-red-600 hover:underline">Remove</button>
+            <button type="button" onclick="editVehicle('${v.id}')" class="text-emerald-600 font-semibold hover:underline">Edit</button>
+            <button type="button" onclick="removeVehicle('${v.id}')" class="text-red-600 hover:underline">Remove</button>
           </td>
         </tr>
       `).join('');
@@ -749,13 +839,15 @@
       const newName = prompt("Edit Driver Full Name:", d.name);
       if (!newName) return;
       const newEmail = prompt("Edit Email / Google ID:", d.email);
+      const newPassword = prompt("Edit Password:", d.password || "password123");
       const newRoleInput = prompt("Edit Role ('DRIVER' or 'ADMIN'):", d.role);
       
       d.name = newName;
       if (newEmail) d.email = newEmail;
+      if (newPassword) d.password = newPassword;
       if (newRoleInput) d.role = newRoleInput.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'DRIVER';
 
-      if (currentUser.id === d.id) {
+      if (currentUser && currentUser.id === d.id) {
         currentUser = d;
         document.getElementById('user-name-display').innerText = d.name;
         document.getElementById('user-role-display').innerText = d.role;
@@ -764,14 +856,14 @@
       }
 
       renderAdminDrivers();
-      renderUserSelectionList();
+      renderLoginUserList();
     }
 
     function removeDriver(id) {
       if (driversList.length <= 1) { alert("Cannot remove the last user account."); return; }
       driversList = driversList.filter(d => d.id !== id);
       renderAdminDrivers();
-      renderUserSelectionList();
+      renderLoginUserList();
     }
 
     function promptAddVehicle() {
